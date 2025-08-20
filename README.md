@@ -39,8 +39,7 @@ For this OTP authentication service, PostgreSQL provides the perfect balance of 
 
 1. **Clone the repository**:
    ```bash
-   git clone <repository-url>
-   cd dekamond_task
+   git clone https://github.com/MiladJlz/dekamond-task.git
    ```
 
 2. **Run with Docker Compose**:
@@ -52,33 +51,6 @@ For this OTP authentication service, PostgreSQL provides the perfect balance of 
    - API Base: http://localhost:8080/v1
    - Swagger Documentation: http://localhost:8080/v1/swagger/
 
-## Local Development Setup
-
-1. **Install dependencies**:
-   ```bash
-   go mod download
-   ```
-
-2. **Set up environment variables** (create `.env` file):
-   ```env
-   APP_PORT=8080
-   POSTGRES_DSN=postgres://postgres:password@localhost:5432/dekamond?sslmode=disable
-   REDIS_ADDR=localhost:6379
-   JWT_SECRET=your-secret-key
-   OTP_TTL=2m
-   RATE_LIMIT=3
-   RATE_LIMIT_WINDOW=10m
-   ```
-
-3. **Start PostgreSQL and Redis**:
-   ```bash
-   docker-compose up db redis -d
-   ```
-
-4. **Run the application**:
-   ```bash
-   go run cmd/server/main.go
-   ```
 
 ## Database Migrations
 
