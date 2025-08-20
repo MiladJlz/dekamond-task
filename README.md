@@ -44,7 +44,7 @@ For this OTP authentication service, PostgreSQL provides the perfect balance of 
 
 2. **Run with Docker Compose**:
    ```bash
-   docker-compose up --build
+   make docker-run
    ```
 
 3. **Access the service**:
