@@ -1,0 +1,273 @@
+basePath: /v1
+definitions:
+  dto.ComponentHealth:
+    description: Health details for a single dependency
+    properties:
+      status:
+        example: up
+        type: string
+    type: object
+  dto.ErrorResponse:
+    description: Standard error response format
+    properties:
+      error:
+        example: Error message
+        type: string
+    type: object
+  dto.HealthCheckResponse:
+    description: Response for health check
+    properties:
+      postgres:
+        $ref: '#/definitions/dto.ComponentHealth'
+      redis:
+        $ref: '#/definitions/dto.ComponentHealth'
+      status:
+        example: healthy
+        type: string
+    type: object
+  dto.RequestOTPRequest:
+    description: Request body for OTP request
+    properties:
+      phone:
+        example: "+1234567890"
+        type: string
+    required:
+    - phone
+    type: object
+  dto.RequestOTPResponse:
+    description: Response for OTP request
+    properties:
+      message:
+        example: OTP sent
+        type: string
+    type: object
+  dto.UserListResponse:
+    description: Response containing paginated list of users
+    properties:
+      limit:
+        example: 10
+        type: integer
+      offset:
+        example: 0
+        type: integer
+      total:
+        example: 100
+        type: integer
+      users:
+        items:
+          $ref: '#/definitions/types.User'
+        type: array
+    type: object
+  dto.VerifyOTPRequest:
+    description: Request body for OTP verification
+    properties:
+      code:
+        example: "123456"
+        type: string
+      phone:
+        example: "+1234567890"
+        type: string
+    required:
+    - code
+    - phone
+    type: object
+  dto.VerifyOTPResponse:
+    description: Response for OTP verification
+    properties:
+      message:
+        example: Login success
+        type: string
+      token:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+    type: object
+  types.User:
+    description: User entity with phone number and registration details
+    properties:
+      created_at:
+        example: "2025-08-19T12:00:00Z"
+        type: string
+      id:
+        example: 1
+        type: integer
+      phone:
+        example: "+1234567890"
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: OTP-based authentication and user management service
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: OTP Authentication API
+  version: "1.0"
+paths:
+  /health:
+    get:
+      consumes:
+      - application/json
+      description: Check service health for PostgreSQL and Redis
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.HealthCheckResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Health check
+      tags:
+      - health
+  /request-otp:
+    post:
+      consumes:
+      - application/json
+      description: Send OTP to phone (logged in server for now)
+      parameters:
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RequestOTPRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.RequestOTPResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "429":
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Request OTP
+      tags:
+      - auth
+  /users:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve list of users with pagination and search
+      parameters:
+      - description: 'Offset for pagination (default: 0)'
+        in: query
+        name: offset
+        type: integer
+      - description: 'Limit for pagination (default: 10, max: 100)'
+        in: query
+        name: limit
+        type: integer
+      - description: Search by phone number
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.UserListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get users list
+      tags:
+      - users
+  /users/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a single user by their ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.User'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get user by ID
+      tags:
+      - users
+  /verify-otp:
+    post:
+      consumes:
+      - application/json
+      description: Verify OTP and login/register user
+      parameters:
+      - description: Request body for OTP verification
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.VerifyOTPRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.VerifyOTPResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Verify OTP
+      tags:
+      - auth
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer" followed by a space and JWT token.
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
